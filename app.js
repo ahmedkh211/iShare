@@ -4,7 +4,7 @@
 'use strict';
 
 /* ═══════════ 1) ثوابت ═══════════ */
-const APP_VERSION = 'ishare-v1.0.4';
+const APP_VERSION = 'ishare-v1.0.5';
 const MAX_FILE = 500 * 1024 * 1024;
 const CHUNK_SIZE = 32 * 1024;
 const HIGH_WATER = 1024 * 1024;

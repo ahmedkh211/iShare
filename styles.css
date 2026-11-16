@@ -157,7 +157,10 @@ html[data-memsave] {
 html { height: 100%; }
 body {
   margin: 0;
-  min-height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   background: var(--bg);
   color: var(--text);
   font-family: -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic", Tahoma, sans-serif;
@@ -321,23 +324,38 @@ html[data-theme="light"] .btn-primary { box-shadow: 0 8px 22px rgba(47, 107, 255
 .tabs[data-active="history"] .tab-ink { transform: translateX(-100%); }
 
 /* ═══════════════════ Views ═══════════════════ */
-.app-main { padding: 16px var(--pad-x) calc(24px + env(safe-area-inset-bottom)); }
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px var(--pad-x) calc(20px + env(safe-area-inset-bottom));
+}
 .view { display: none; }
-.view.active { display: block; animation: viewIn .35s var(--ease); }
+.view.active { display: flex; flex-direction: column; flex: 1; animation: viewIn .35s var(--ease); }
 @keyframes viewIn {
   from { opacity: 0; transform: translateY(14px) scale(.985); }
   to { opacity: 1; transform: none; }
 }
 
 /* ═══════════════════ Stage (النواة + المدار) ═══════════════════ */
-.stage { display: flex; flex-direction: column; align-items: center; }
-.orbit-wrap { width: 100%; display: grid; place-items: center; padding: 18px 0 6px; }
+.stage { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.orbit-wrap {
+  flex: 1;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  padding: 14px 0 6px;
+  min-height: 320px;
+}
 .orbit {
   position: relative;
-  width: min(86vw, 460px);
+  width: min(86vw, 60vh, 580px);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
+}
+@media (orientation: landscape) {
+  .orbit { width: min(86vw, 50vh, 520px); }
 }
 .orbit::before {
   content: "";
@@ -472,7 +490,7 @@ html[data-theme="light"] .btn-primary { box-shadow: 0 8px 22px rgba(47, 107, 255
 .hint.ready { color: var(--ok); font-weight: 700; }
 
 /* ═══════════════════ Near list ═══════════════════ */
-.near-block { width: 100%; margin-top: 26px; }
+.near-block { width: 100%; margin-top: 18px; }
 .near-head {
   display: flex;
   align-items: center;
@@ -555,6 +573,8 @@ html[data-theme="light"] .btn-primary { box-shadow: 0 8px 22px rgba(47, 107, 255
 @keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 
 /* ═══════════════════ History rows ═══════════════════ */
+.history-wrap { flex: 1; display: flex; flex-direction: column; }
+.history-wrap .empty { flex: 1; display: flex; flex-direction: column; justify-content: center; }
 .rows { display: flex; flex-direction: column; gap: 10px; }
 .row-card {
   display: flex;
@@ -1029,12 +1049,13 @@ html[data-theme="light"] .modal-backdrop { background: rgba(40, 52, 80, .3); }
   .stage {
     display: grid;
     grid-template-columns: auto 1fr;
+    grid-template-rows: 1fr auto;
     gap: 8px 44px;
     align-items: center;
   }
-  .near-block { margin-top: 0; grid-column: 2; }
-  .core-actions { grid-column: 1; }
-  .orbit-wrap { grid-column: 1 / -1; }
+  .near-block { margin-top: 0; grid-column: 2; grid-row: 2; }
+  .core-actions { grid-column: 1; grid-row: 2; }
+  .orbit-wrap { grid-column: 1 / -1; grid-row: 1; min-height: 0; }
 }
 
 @media (min-width: 1000px) {
