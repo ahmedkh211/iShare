@@ -4,11 +4,11 @@
 'use strict';
 
 /* ═══════════ 1) ثوابت ═══════════ */
-const APP_VERSION = 'ishare-v1.0.5';
+const APP_VERSION = 'ishare-v1.0.6';
 const MAX_FILE = 500 * 1024 * 1024;
-const CHUNK_SIZE = 32 * 1024;
-const HIGH_WATER = 1024 * 1024;
-const LOW_WATER = 512 * 1024;
+const CHUNK_SIZE = 64 * 1024;
+const HIGH_WATER = 4 * 1024 * 1024;
+const LOW_WATER = 1024 * 1024;
 const RECV_FLUSH = 4 * 1024 * 1024;
 
 const MQTT_URL = 'wss://broker.emqx.io:8084/mqtt';

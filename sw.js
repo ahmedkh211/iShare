@@ -1,4 +1,4 @@
-const VERSION = 'ishare-v1.0.5';
+const VERSION = 'ishare-v1.0.6';
 const CACHE = VERSION;
 
 const ASSETS = [

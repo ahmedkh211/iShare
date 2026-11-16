@@ -340,16 +340,17 @@ html[data-theme="light"] .btn-primary { box-shadow: 0 8px 22px rgba(47, 107, 255
 /* ═══════════════════ Stage (النواة + المدار) ═══════════════════ */
 .stage { flex: 1; display: flex; flex-direction: column; align-items: center; }
 .orbit-wrap {
-  flex: 1;
+  flex: 0 0 auto;
+  margin-top: auto;
   width: 100%;
   display: grid;
   place-items: center;
-  padding: 14px 0 6px;
-  min-height: 320px;
+  padding: 10px 0 4px;
+  min-height: 300px;
 }
 .orbit {
   position: relative;
-  width: min(86vw, 60vh, 580px);
+  width: min(86vw, 55vh, 520px);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -490,7 +491,7 @@ html[data-theme="light"] .btn-primary { box-shadow: 0 8px 22px rgba(47, 107, 255
 .hint.ready { color: var(--ok); font-weight: 700; }
 
 /* ═══════════════════ Near list ═══════════════════ */
-.near-block { width: 100%; margin-top: 18px; }
+.near-block { width: 100%; margin-top: 18px; margin-bottom: auto; }
 .near-head {
   display: flex;
   align-items: center;
