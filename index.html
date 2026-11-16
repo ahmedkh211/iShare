@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark" data-bg="none" data-glass="soft">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0e17">
+<meta name="description" content="iShare — مشاركة الملفات والرسائل بين الأجهزة على نفس الشبكة">
+<title>iShare — مشاركة سريعة</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-180.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<canvas id="bgCanvas" aria-hidden="true"></canvas>
+
+<div id="updateBar" class="update-bar" hidden>
+  <span class="ub-text">يوجد تحديث جديد للتطبيق</span>
+  <button id="updateBtn" class="btn btn-sm" type="button">تحديث الآن</button>
+</div>
+
+<header class="app-header glass-panel">
+  <div class="brand">
+    <span class="brand-logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+        <circle cx="7" cy="12" r="3.2" fill="currentColor" opacity=".9"/>
+        <circle cx="17" cy="6.5" r="2.4" fill="currentColor" opacity=".65"/>
+        <circle cx="17" cy="17.5" r="2.4" fill="currentColor" opacity=".65"/>
+        <path d="M9.8 10.6 14.9 7.6M9.8 13.4l5.1 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      </svg>
+    </span>
+    <div class="brand-text">
+      <h1>iShare</h1>
+      <span id="connState" class="conn-state">جارٍ الاتصال بخدمة الاكتشاف…</span>
+    </div>
+  </div>
+  <button id="settingsBtn" class="icon-btn" type="button" aria-label="الإعدادات">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <circle cx="12" cy="12" r="3.2"/>
+      <path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.5a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.4h4l.4-2.4a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2Z"/>
+    </svg>
+  </button>
+</header>
+
+<nav class="tabs glass-panel" role="tablist" aria-label="الأقسام">
+  <span class="tab-ink" aria-hidden="true"></span>
+  <button class="tab active" data-tab="share" role="tab" aria-selected="true" type="button">
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M12 3 8 7M12 3l4 4M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
+    المشاركة
+  </button>
+  <button class="tab" data-tab="history" role="tab" aria-selected="false" type="button">
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5l3 2M12 21a9 9 0 1 1 9-9"/><path d="M21 12a9 9 0 0 0-9-9"/></svg>
+    السجل
+  </button>
+</nav>
+
+<main class="app-main">
+
+  <!-- ══════════ شاشة المشاركة ══════════ -->
+  <section id="view-share" class="view active" role="tabpanel">
+
+    <div class="stage">
+      <div class="orbit-wrap">
+        <div class="orbit" id="orbit">
+          <div class="core glass-card" id="coreCard">
+            <div class="core-avatar">
+              <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3v10M12 3 8.5 6.5M12 3l3.5 3.5"/><path d="M6 12v6a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-6"/>
+              </svg>
+            </div>
+            <div class="core-name" id="myName">جهازي</div>
+            <div class="core-code tnum" id="myCode">····</div>
+          </div>
+          <!-- الأجهزة المتصلة تدور حول النواة (تُرسم بـ JS) -->
+        </div>
+      </div>
+
+      <div class="core-actions">
+        <button id="pickFilesBtn" class="btn btn-primary btn-lg" type="button">
+          <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M12 4 7.5 8.5M12 4l4.5 4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+          إرسال ملفات
+        </button>
+        <span class="hint" id="pickHint">اختر جهازًا متصلًا أولًا</span>
+      </div>
+      <input type="file" id="fileInput" multiple hidden>
+
+      <div class="near-block" id="nearBlock">
+        <div class="near-head">
+          <h2 class="section-title">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12a7 7 0 0 1 7-7h6a7 7 0 1 1 0 14H9a7 7 0 0 1-7-7Z"/><circle cx="16" cy="12" r="2.6"/></svg>
+            أجهزة قريبة
+          </h2>
+          <button id="codeBtn" class="btn btn-ghost btn-sm" type="button">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M8 12h8"/></svg>
+            اتصال برمز
+          </button>
+        </div>
+        <div class="near-list" id="nearList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ شاشة السجل ══════════ -->
+  <section id="view-history" class="view" role="tabpanel">
+    <div class="history-wrap">
+      <div id="historyList" class="rows"></div>
+      <div id="historyEmpty" class="empty" hidden>
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" width="52" height="52" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+        </div>
+        <h3>لا توجد ملفات مستلمة بعد</h3>
+        <p>ستظهر هنا كل الملفات التي تصلكم من الأجهزة المتصلة</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══════════ لوحة النقل الحية ══════════ -->
+<div id="transferPanel" class="transfer-panel glass-card" hidden>
+  <div class="tp-head">
+    <span class="tp-title" id="tpTitle">النقل الجاري</span>
+    <button id="tpMinBtn" class="icon-btn icon-btn-sm" type="button" aria-label="تصغير">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+  </div>
+  <div id="transferList" class="tp-list"></div>
+</div>
+
+<!-- ══════════ ورقة الإعدادات ══════════ -->
+<div id="settingsSheet" class="sheet-backdrop" hidden>
+  <div class="sheet glass-panel" role="dialog" aria-modal="true" aria-label="الإعدادات">
+    <div class="sheet-grip"></div>
+    <div class="sheet-head"><h2>الإعدادات</h2><button class="icon-btn" data-close="settingsSheet" type="button" aria-label="إغلاق">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+
+    <button class="picker-row" id="rowName" type="button">
+      <span class="pr-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+      </span>
+      <span class="pr-name">اسم الجهاز</span>
+      <span class="pr-value" id="nameValue">جهازي</span>
+    </button>
+
+    <button class="picker-row" id="rowTheme" type="button">
+      <span class="pr-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z"/></svg>
+      </span>
+      <span class="pr-name">الوضع</span>
+      <span class="pr-value" id="themeValue">داكن</span>
+    </button>
+
+    <button class="picker-row" id="rowBg" type="button">
+      <span class="pr-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="2.5 3.5"/></svg>
+      </span>
+      <span class="pr-name">الخلفية</span>
+      <span class="pr-value" id="bgValue">بلا خلفية</span>
+    </button>
+
+    <button class="picker-row" id="rowGlass" type="button" data-needs-bg>
+      <span class="pr-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M7 3h10l3 7-8 11L4 10l3-7Z"/><path d="M4 10h16"/></svg>
+      </span>
+      <span class="pr-name">درجة الزجاج</span>
+      <span class="pr-value" id="glassValue">ناعم</span>
+    </button>
+
+    <button class="picker-row toggle-row" id="rowAuto" type="button">
+      <span class="pr-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2Z"/></svg>
+      </span>
+      <span class="pr-name">قبول طلبات الاتصال تلقائيًا</span>
+      <span class="pr-value"><span class="switch" id="autoSwitch"></span></span>
+    </button>
+
+    <button class="picker-row toggle-row" id="rowMem" type="button">
+      <span class="pr-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M4 9V7a3 3 0 0 1 3-3h2M20 9V7a3 3 0 0 0-3-3h-2M4 15v2a3 3 0 0 0 3 3h2M20 15v2a3 3 0 0 1-3 3h-2"/></svg>
+      </span>
+      <span class="pr-name">توفير الذاكرة</span>
+      <span class="pr-value"><span class="switch" id="memSwitch"></span></span>
+    </button>
+
+    <div class="sheet-foot">
+      <span class="foot-ver">iShare <span id="verLabel" class="tnum"></span></span>
+      <span class="foot-note">كل البيانات محفوظة على جهازك فقط</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ مودال الشات ══════════ -->
+<div id="chatModal" class="modal-backdrop" hidden>
+  <div class="chat-modal glass-panel" role="dialog" aria-modal="true" aria-label="محادثة">
+    <div class="chat-head">
+      <div class="chat-peer">
+        <span class="chat-avatar" id="chatAvatar">؟</span>
+        <div><b id="chatPeerName">جهاز</b><small id="chatPeerState">متصل</small></div>
+      </div>
+      <button class="icon-btn" data-close="chatModal" type="button" aria-label="إغلاق">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="chat-msgs" id="chatMsgs"></div>
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" class="text-input" placeholder="اكتب رسالة…" autocomplete="off" maxlength="2000">
+      <button id="chatSend" class="icon-btn icon-btn-accent" type="button" aria-label="إرسال">
+        <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4 4 11l6 2.5L12.5 20 20 4Z"/><path d="M10 13.5 20 4"/></svg>
+      </button>
+    </div>
+    <div class="chat-actions">
+      <button id="chatFilesBtn" class="btn btn-ghost btn-sm" type="button">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M12 4 7.5 8.5M12 4l4.5 4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+        إرسال ملفات لهذا الجهاز
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ مودال إدخال عام ══════════ -->
+<div id="inputModal" class="modal-backdrop" hidden>
+  <div class="input-modal glass-panel" role="dialog" aria-modal="true">
+    <h3 id="inputTitle">إدخال</h3>
+    <input type="text" id="inputField" class="text-input" autocomplete="off" maxlength="40">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" data-close="inputModal" type="button">إلغاء</button>
+      <button id="inputOk" class="btn btn-primary" type="button">تأكيد</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ مودال تأكيد ══════════ -->
+<div id="confirmModal" class="modal-backdrop" hidden>
+  <div class="input-modal glass-panel" role="dialog" aria-modal="true">
+    <h3 id="confirmTitle">تأكيد</h3>
+    <p id="confirmText" class="confirm-text"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" data-close="confirmModal" type="button">إلغاء</button>
+      <button id="confirmOk" class="btn btn-danger" type="button">حذف</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ طلب اتصال وارد ══════════ -->
+<div id="reqModal" class="modal-backdrop" hidden>
+  <div class="input-modal glass-panel req-modal" role="dialog" aria-modal="true">
+    <div class="req-avatar-wrap"><span class="req-avatar" id="reqAvatar">؟</span><span class="req-pulse"></span></div>
+    <h3 id="reqTitle">جهاز يريد الاتصال بك</h3>
+    <p id="reqText" class="confirm-text"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="reqReject" type="button">رفض</button>
+      <button class="btn btn-primary" id="reqAccept" type="button">قبول</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
