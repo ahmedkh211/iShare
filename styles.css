@@ -1,5 +1,6 @@
 /* ═══════════════════ iShare — Design System ═══════════════════ */
 *, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { -webkit-tap-highlight-color: transparent; }
 
 :root {

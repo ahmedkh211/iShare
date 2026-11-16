@@ -4,7 +4,7 @@
 'use strict';
 
 /* ═══════════ 1) ثوابت ═══════════ */
-const APP_VERSION = 'ishare-v1.0.2';
+const APP_VERSION = 'ishare-v1.0.3';
 const MAX_FILE = 500 * 1024 * 1024;
 const CHUNK_SIZE = 32 * 1024;
 const HIGH_WATER = 1024 * 1024;
@@ -94,7 +94,7 @@ function dropUrl(key) {
 
 /* ═══════════ 3) الحالة المركزية ═══════════ */
 const state = {
-  prefs: { theme: 'dark', bg: 'none', glass: 'soft', memsave: false, autoAccept: true, name: '', code: '' },
+  prefs: { theme: 'dark', bg: 'none', glass: 'soft', memsave: false, autoAccept: false, name: '', code: '', pv: 0 },
   tab: 'share',
   myId: uid(10),
   peers: new Map(),
@@ -116,6 +116,7 @@ function loadPrefs() {
   } catch (e) { /* تجاهل */ }
   if (!state.prefs.code) state.prefs.code = String(Math.floor(1000 + Math.random() * 9000));
   if (!state.prefs.name) state.prefs.name = 'جهاز-' + state.prefs.code;
+  if (state.prefs.pv < 3) { state.prefs.autoAccept = false; state.prefs.pv = 3; }
   savePrefs();
 }
 function savePrefs() {
