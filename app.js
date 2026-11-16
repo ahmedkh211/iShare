@@ -4,7 +4,7 @@
 'use strict';
 
 /* ═══════════ 1) ثوابت ═══════════ */
-const APP_VERSION = 'ishare-v1.0.3';
+const APP_VERSION = 'ishare-v1.0.4';
 const MAX_FILE = 500 * 1024 * 1024;
 const CHUNK_SIZE = 32 * 1024;
 const HIGH_WATER = 1024 * 1024;
@@ -846,12 +846,23 @@ async function onRemoteSDP(id, kind, sdp) {
     } else if (kind === 'answer') {
       if (pc.signalingState === 'have-local-offer') await pc.setRemoteDescription(sdp);
     }
+    if (peer.pendingIce && peer.pendingIce.length && pc.remoteDescription) {
+      const list = peer.pendingIce.splice(0);
+      for (const c of list) {
+        try { await pc.addIceCandidate(c); } catch (err) { /* تجاهل */ }
+      }
+    }
   } catch (e) { /* تجاهل */ }
 }
 
 async function onRemoteICE(id, cand) {
   const peer = state.peers.get(id);
-  if (!peer || !peer.pc || !cand) return;
+  if (!peer || !cand) return;
+  if (!peer.pc || !peer.pc.remoteDescription) {
+    peer.pendingIce = peer.pendingIce || [];
+    peer.pendingIce.push(cand);
+    return;
+  }
   try { await peer.pc.addIceCandidate(cand); } catch (e) { /* تجاهل */ }
 }
 
@@ -872,6 +883,16 @@ function wireChannel(peer, dc) {
       renderPeers();
       toast('انقطع الاتصال بـ ' + peer.name, 'err');
     }
+    for (const [k, t] of state.transfers) {
+      if (t.peerId === peer.id && !t.done) {
+        state.transfers.delete(k);
+        if (t.dir === 'recv') {
+          idbClearRange('chunks', t.id);
+          toast('أُلغي استلام «' + t.name + '»', 'err');
+        }
+      }
+    }
+    renderTransfers();
   };
   dc.onerror = () => { /* تجاهل */ };
   dc.onmessage = (e) => {
@@ -935,7 +956,6 @@ function onChunk(peer, data) {
       t.bufLen += u8.byteLength;
       t.got += u8.byteLength;
       if (t.bufLen >= RECV_FLUSH) flushRecv(t);
-      renderTransfers();
       return;
     }
   }
