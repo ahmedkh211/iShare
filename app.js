@@ -4,7 +4,7 @@
 'use strict';
 
 /* ═══════════ 1) ثوابت ═══════════ */
-const APP_VERSION = 'ishare-v1.0.6';
+const APP_VERSION = 'ishare-v1.0.7';
 const MAX_FILE = 500 * 1024 * 1024;
 const CHUNK_SIZE = 64 * 1024;
 const HIGH_WATER = 4 * 1024 * 1024;
@@ -1127,6 +1127,7 @@ function openChat(id) {
   state.selected = id;
   state.chatPeer = id;
   peer.msgs = peer.msgs || [];
+  if (peer.unread) { peer.unread = 0; renderPeers(); }
   $('#chatAvatar').textContent = (peer.name || '؟').charAt(0);
   $('#chatPeerName').textContent = peer.name;
   $('#chatPeerState').textContent = 'متصل ✓';
@@ -1141,6 +1142,11 @@ function addChatMsg(peer, text, mine) {
   peer.msgs = peer.msgs || [];
   peer.msgs.push({ text, mine, ts: Date.now() });
   if (state.chatPeer === peer.id) renderChat();
+  else if (!mine) {
+    /* وصلت رسالة والشات مقفول → عدّاد غير المقروء على جهاز الطرف الآخر */
+    peer.unread = (peer.unread || 0) + 1;
+    renderPeers();
+  }
   if (!mine) vibrate(15);
 }
 
@@ -1197,7 +1203,9 @@ function renderPeers() {
     const ang = (-90 + i * (360 / Math.max(n, 1))) * Math.PI / 180;
     const x = Math.cos(ang) * R, y = Math.sin(ang) * R;
     el.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px)';
-    el.innerHTML = '<span class="op-dot">' + esc((p.name || '؟').charAt(0)) + '</span><span class="op-name">' + esc(p.name) + '</span>';
+    const badge = p.unread ? '<span class="op-badge">' + (p.unread > 9 ? '9+' : p.unread) + '</span>' : '';
+    el.innerHTML = '<span class="op-dot">' + esc((p.name || '؟').charAt(0)) + '</span><span class="op-name">' + esc(p.name) + '</span>' + badge;
+    if (p.unread) el.classList.add('has-unread');
     el.addEventListener('click', () => { openChat(p.id); renderPeers(); });
     orbit.appendChild(el);
   });
@@ -1313,7 +1321,7 @@ function renderHistory() {
   });
 }
 
-/* عرض الشات */
+/* عرض الشات — الرسائل الجديدة فقط تدخل بأنيميشن (peer.rendered = عدد المرسوم سابقًا) */
 function renderChat() {
   const peer = state.chatPeer ? state.peers.get(state.chatPeer) : null;
   const box = $('#chatMsgs');
@@ -1321,12 +1329,16 @@ function renderChat() {
   peer.msgs = peer.msgs || [];
   if (!peer.msgs.length) {
     box.innerHTML = '<div class="chat-empty">أرسل أول رسالة 👋</div>';
+    peer.rendered = 0;
     return;
   }
+  const wasFull = box.scrollHeight - box.scrollTop - box.clientHeight < 60;
   box.innerHTML = '';
-  peer.msgs.forEach((m) => {
+  peer.msgs.forEach((m, i) => {
     const wrap = document.createElement('div');
     wrap.className = 'chat-msg' + (m.mine ? ' mine' : '');
+    if (peer.rendered > 0 && i >= peer.rendered) wrap.classList.add('new');
+    else if (peer.rendered > 0) wrap.classList.add('stale');
     const b = document.createElement('div');
     b.className = 'bubble';
     b.textContent = m.text;
@@ -1339,7 +1351,9 @@ function renderChat() {
     wrap.appendChild(cp);
     box.appendChild(wrap);
   });
-  box.scrollTop = box.scrollHeight;
+  peer.rendered = peer.msgs.length;
+  /* تمرير سلس للرسالة الجديدة، وفوري عند الفتح الأول */
+  box.scrollTo({ top: box.scrollHeight, behavior: wasFull ? 'smooth' : 'auto' });
 }
 
 /* ═══════════ 13) ربط الأحداث ═══════════ */
