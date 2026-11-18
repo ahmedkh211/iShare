@@ -4,7 +4,7 @@
 'use strict';
 
 /* ═══════════ 1) ثوابت ═══════════ */
-const APP_VERSION = 'ishare-v1.0.7';
+const APP_VERSION = 'ishare-v1.0.8';
 const MAX_FILE = 500 * 1024 * 1024;
 const CHUNK_SIZE = 64 * 1024;
 const HIGH_WATER = 4 * 1024 * 1024;
@@ -257,6 +257,7 @@ function closeModal(id) {
   setTimeout(() => {
     el.hidden = true;
     el.classList.remove('closing');
+    if (id === 'chatModal') state.chatPeer = null; /* رجع للواجهة الرئيسية → أي رسالة جديدة تظهر العداد */
   }, 240);
 }
 
